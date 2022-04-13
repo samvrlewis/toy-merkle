@@ -398,4 +398,13 @@ mod tests {
             &other_tree.root_hash()
         ));
     }
+
+    #[test]
+    fn test_merkle_proof_fails_for_invalid_index() {
+        let data = vec![Data::from("AAAA"), Data::from("BBBB")];
+
+        let tree = MerkleTree::construct(&data);
+
+        assert!(tree.get_merkle_proof_by_index(3).is_err());
+    }
 }
