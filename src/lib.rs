@@ -212,8 +212,19 @@ fn is_power_of_two(n: usize) -> bool {
 mod tests {
     use super::*;
 
+    // Helper function to verify Merkle proofs for each data leaf in the tree
+    fn verify_merkle_proofs(data: &Vec<Vec<u8>>, tree: &MerkleTree) {
+        for data_leaf in data {
+            let proof = tree
+                .get_merkle_proof_by_data(&data_leaf)
+                .expect("Should be able to create proof");
+
+            assert!(verify_merkle_proof(&proof, &data_leaf, &tree.root_hash()));
+        }
+    }
+
     #[test]
-    fn test_2_level_tree() {
+    fn two_level_tree() {
         let data = vec![Data::from("A"), Data::from("B")];
 
         assert!(MerkleTree::verify(
@@ -230,7 +241,7 @@ mod tests {
     }
 
     #[test]
-    fn test_3_level_tree() {
+    fn three_level_tree() {
         let data = vec![
             Data::from("AAA"),
             Data::from("BBB"),
@@ -254,7 +265,7 @@ mod tests {
     }
 
     #[test]
-    fn test_4_level_tree() {
+    fn four_level_tree() {
         let data = vec![
             Data::from("AAAA"),
             Data::from("BBBB"),
@@ -288,33 +299,16 @@ mod tests {
     }
 
     #[test]
-    fn test_verify_merkle_proof() {
+    fn verify_merkle_proof_two_layer() {
         let data = vec![Data::from("AAAA"), Data::from("BBBB")];
 
         let tree = MerkleTree::construct(&data);
-        let proof = tree
-            .get_merkle_proof_by_data(&Data::from("AAAA"))
-            .expect("Should be able to create proof");
 
-        assert!(verify_merkle_proof(
-            &proof,
-            &Data::from("AAAA"),
-            &tree.root_hash()
-        ));
-
-        let proof = tree
-            .get_merkle_proof_by_data(&Data::from("BBBB"))
-            .expect("Should be able to create proof");
-
-        assert!(verify_merkle_proof(
-            &proof,
-            &Data::from("BBBB"),
-            &tree.root_hash()
-        ));
+        verify_merkle_proofs(&data, &tree);
     }
 
     #[test]
-    fn test_verify_merkle_proof_larger() {
+    fn verify_merkle_proof_larger() {
         let data = vec![
             Data::from("AAAA"),
             Data::from("BBBB"),
@@ -324,18 +318,11 @@ mod tests {
 
         let tree = MerkleTree::construct(&data);
 
-        let proof = tree
-            .get_merkle_proof_by_data(&Data::from("AAAA"))
-            .expect("Should be able to create proof");
-        assert!(verify_merkle_proof(
-            &proof,
-            &Data::from("AAAA"),
-            &tree.root_hash()
-        ));
+        verify_merkle_proofs(&data, &tree);
     }
 
     #[test]
-    fn test_verify_merkle_tree_middle_node() {
+    fn verify_merkle_tree_middle_node() {
         let data = vec![
             Data::from("AAAA"),
             Data::from("BBBB"),
@@ -344,18 +331,12 @@ mod tests {
         ];
 
         let tree = MerkleTree::construct(&data);
-        let proof = tree
-            .get_merkle_proof_by_data(&Data::from("DDDD"))
-            .expect("Should be able to create proof");
-        assert!(verify_merkle_proof(
-            &proof,
-            &Data::from("DDDD"),
-            &tree.root_hash()
-        ));
+
+        verify_merkle_proofs(&data, &tree);
     }
 
     #[test]
-    fn test_verify_merkle_tree_8() {
+    fn verify_merkle_tree_8() {
         let data = vec![
             Data::from("AAAA"),
             Data::from("BBBB"),
@@ -369,16 +350,11 @@ mod tests {
 
         let tree = MerkleTree::construct(&data);
 
-        for data_leaf in data {
-            let proof = tree
-                .get_merkle_proof_by_data(&data_leaf)
-                .expect("Should be able to create proof");
-            assert!(verify_merkle_proof(&proof, &data_leaf, &tree.root_hash()));
-        }
+        verify_merkle_proofs(&data, &tree);
     }
 
     #[test]
-    fn test_verify_merkle_tree_16() {
+    fn verify_merkle_tree_16() {
         let data = vec![
             Data::from("AAAA"),
             Data::from("BBBB"),
@@ -400,16 +376,11 @@ mod tests {
 
         let tree = MerkleTree::construct(&data);
 
-        for data_leaf in data {
-            let proof = tree
-                .get_merkle_proof_by_data(&data_leaf)
-                .expect("Should be able to create proof");
-            assert!(verify_merkle_proof(&proof, &data_leaf, &tree.root_hash()));
-        }
+        verify_merkle_proofs(&data, &tree);
     }
 
     #[test]
-    fn test_merkle_proof_fails_for_wrong_data() {
+    fn merkle_proof_fails_for_wrong_data() {
         let data = vec![Data::from("AAAA"), Data::from("BBBB")];
 
         let tree = MerkleTree::construct(&data);
@@ -424,7 +395,7 @@ mod tests {
     }
 
     #[test]
-    fn test_merkle_proof_fails_for_wrong_tree() {
+    fn merkle_proof_fails_for_wrong_tree() {
         let data = vec![Data::from("AAAA"), Data::from("BBBB")];
 
         let tree = MerkleTree::construct(&data);
@@ -449,7 +420,7 @@ mod tests {
     }
 
     #[test]
-    fn test_merkle_proof_fails_if_tree_changed() {
+    fn merkle_proof_fails_if_tree_changed() {
         let data = vec![Data::from("AAAA"), Data::from("BBBB")];
 
         let tree = MerkleTree::construct(&data);
