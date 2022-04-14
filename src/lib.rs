@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-#![allow(unused_variables)]
 use sha2::Digest;
 
 pub type Data = Vec<u8>;
@@ -107,7 +105,7 @@ impl MerkleTree {
         let mut proof = Proof::default();
         let mut current_known_index = leaf_index;
 
-        for level in 0..self.levels - 1 {
+        for _ in 0..self.levels - 1 {
             // We already know (or already can compute) the hash of one side of
             // the pair, so just need to return the other for the proof
             let corresponding_hash = if current_known_index % 2 == 0 {
